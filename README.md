@@ -83,7 +83,7 @@ Edit `.env` to customize settings:
 | Setting | Default | Description |
 |---------|---------|-------------|
 | `WHISPER_MODEL` | `base.en` | Model size (tiny.en, base.en, small.en, medium.en, large) |
-| `HOTKEY` | `<cmd>+<shift>+space` | Global hotkey combination |
+| `HOTKEY` | `<cmd>+<shift>+<space>` | Global hotkey combination |
 | `MAX_RECORDING_DURATION` | `300` | Maximum recording length (seconds) |
 | `MIN_RECORDING_DURATION` | `0.5` | Minimum recording length (seconds) |
 | `ENABLE_SILENCE_DETECTION` | `true` | Filter out silent recordings |

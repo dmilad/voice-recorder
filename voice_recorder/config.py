@@ -34,7 +34,7 @@ class Config:
     paste_delay_ms: int = int(os.getenv("PASTE_DELAY_MS", "100"))
 
     # Hotkey
-    hotkey: str = os.getenv("HOTKEY", "<cmd>+<shift>+space")
+    hotkey: str = os.getenv("HOTKEY", "<cmd>+<shift>+<space>")
 
     def __post_init__(self):
         """Validate configuration."""
