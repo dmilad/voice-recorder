@@ -61,7 +61,14 @@ class VoiceRecorderApp:
         print("\n--- UI Clear button pressed ---")
         self.state_manager.clear_transcription()
         self._update_ui_transcription("")
-        print("✅ Text cleared")
+
+        # Clean up any temporary files from chunked transcription
+        self.transcriber.cleanup_temp_files()
+
+        # Clear accumulated transcription
+        self._accumulated_transcription = ""
+
+        print("✅ Text and temp files cleared")
 
     def _toggle_recording(self):
         """Toggle recording state."""
