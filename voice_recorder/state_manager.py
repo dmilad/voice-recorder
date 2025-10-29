@@ -23,6 +23,7 @@ class StateManager:
         self._lock = threading.Lock()
         self._audio_buffer: list[np.ndarray] = []
         self._last_transcription: str = ""
+        self._processed_sample_index: int = 0  # Track how many samples have been transcribed
 
     @property
     def state(self) -> RecordingState:
@@ -85,6 +86,110 @@ class StateManager:
         """Clear the audio buffer."""
         with self._lock:
             self._audio_buffer.clear()
+            self._processed_sample_index = 0
+
+    def get_next_chunk(self, chunk_size_samples: int, overlap_samples: int = 0) -> Optional[np.ndarray]:
+        """
+        Get the next chunk of audio for transcription without clearing the buffer.
+        Allows recording to continue while chunks are being transcribed.
+
+        Args:
+            chunk_size_samples: Number of samples to retrieve
+            overlap_samples: Number of samples to overlap with previous chunk for context
+
+        Returns:
+            Audio chunk as numpy array or None if not enough new audio available
+        """
+        with self._lock:
+            if not self._audio_buffer:
+                return None
+
+            # Get total samples in buffer
+            total_samples = sum(len(chunk) for chunk in self._audio_buffer)
+
+            # Calculate start position (accounting for overlap)
+            start_idx = max(0, self._processed_sample_index - overlap_samples)
+            end_idx = start_idx + chunk_size_samples + overlap_samples
+
+            # Check if we have enough new audio
+            if self._processed_sample_index >= total_samples:
+                return None  # No new audio available
+
+            # If we don't have a full chunk yet, only return None if we're still recording
+            # (this will be checked by the caller based on recording state)
+            available_new_samples = total_samples - self._processed_sample_index
+            if available_new_samples < chunk_size_samples:
+                # Not enough for a full chunk yet
+                return None
+
+            # Concatenate buffer and extract chunk
+            full_audio = np.concatenate(self._audio_buffer)
+            chunk = full_audio[start_idx:min(end_idx, total_samples)]
+
+            return chunk
+
+    def mark_chunk_processed(self, num_samples: int) -> None:
+        """
+        Mark a number of samples as processed (transcribed).
+
+        Args:
+            num_samples: Number of samples that have been processed
+        """
+        with self._lock:
+            self._processed_sample_index += num_samples
+
+    def get_remaining_audio(self, overlap_samples: int = 0) -> Optional[np.ndarray]:
+        """
+        Get all remaining unprocessed audio (for final pass after recording stops).
+
+        Args:
+            overlap_samples: Number of samples to include before the unprocessed section
+
+        Returns:
+            Remaining audio as numpy array or None if no unprocessed audio
+        """
+        with self._lock:
+            if not self._audio_buffer:
+                return None
+
+            total_samples = sum(len(chunk) for chunk in self._audio_buffer)
+
+            # If everything is processed, return None
+            if self._processed_sample_index >= total_samples:
+                return None
+
+            # Get from (processed_index - overlap) to end
+            start_idx = max(0, self._processed_sample_index - overlap_samples)
+            full_audio = np.concatenate(self._audio_buffer)
+
+            return full_audio[start_idx:]
+
+    def get_total_samples(self) -> int:
+        """
+        Get total number of samples currently in buffer.
+
+        Returns:
+            Total sample count
+        """
+        with self._lock:
+            if not self._audio_buffer:
+                return 0
+            return sum(len(chunk) for chunk in self._audio_buffer)
+
+    def get_processed_samples(self) -> int:
+        """
+        Get number of samples that have been processed.
+
+        Returns:
+            Processed sample count
+        """
+        with self._lock:
+            return self._processed_sample_index
+
+    def reset_chunk_tracking(self) -> None:
+        """Reset chunk processing tracking (call when starting new recording)."""
+        with self._lock:
+            self._processed_sample_index = 0
 
     def is_idle(self) -> bool:
         """Check if state is IDLE."""

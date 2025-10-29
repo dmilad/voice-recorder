@@ -7,6 +7,7 @@ A local voice-to-text application for macOS with global hotkey support and simpl
 - 🎤 **Dual Recording Modes**:
   - Global hotkey (`Ctrl+Option+Space`) for quick auto-insert into active text fields
   - UI button for safe transcription display (text never gets lost!)
+- ⏱️ **Long Recording Support**: Chunked transcription for 30+ minute recordings with real-time progress
 - 🪟 **Simple GUI**: Clean Tkinter window to view and copy transcriptions
 - 🔒 **Fully Local**: All processing happens on your Mac (no cloud, no internet required)
 - ⚡ **Fast**: Uses faster-whisper for optimized transcription
@@ -91,6 +92,28 @@ This app requires several permissions to function:
    - Close the Voice Recorder window
    - Or press `Ctrl+C` in the terminal
 
+## Chunked Transcription for Long Recordings
+
+The app now supports recordings up to **1 hour** (or longer if configured) with intelligent chunked processing:
+
+### How It Works
+- **Automatic chunking**: Long recordings are split into 30-second chunks
+- **Real-time processing**: Transcription happens *while* you record (UI mode only)
+- **Progressive results**: See transcribed text appear as chunks complete (~34 seconds for first results)
+- **Context preservation**: 5-second overlap prevents word cutoffs between chunks
+- **Progress tracking**: Live progress display shows "Transcribed X:XX / Y:YY (Z%)"
+
+### Benefits
+- ✅ No more 5-minute recording limit
+- ✅ See results faster (first text in ~34 seconds vs waiting 10+ minutes)
+- ✅ Better user experience with progress feedback
+- ✅ Memory efficient (chunks processed and cleared incrementally)
+- ✅ Works for meetings, lectures, podcasts, long-form content
+
+### Mode Differences
+- **Hotkey mode**: Still uses single-pass transcription (best for quick snippets)
+- **UI mode**: Uses chunked transcription automatically (best for long recordings)
+
 ## Configuration
 
 Edit `.env` to customize settings:
@@ -99,10 +122,13 @@ Edit `.env` to customize settings:
 |---------|---------|-------------|
 | `WHISPER_MODEL` | `base.en` | Model size (tiny.en, base.en, small.en, medium.en, large) |
 | `HOTKEY` | `<cmd>+<alt>+<space>` | Global hotkey combination (Ctrl+Option+Space) |
-| `MAX_RECORDING_DURATION` | `300` | Maximum recording length (seconds) |
+| `MAX_RECORDING_DURATION` | `3600` | Maximum recording length in seconds (1 hour) |
 | `MIN_RECORDING_DURATION` | `0.5` | Minimum recording length (seconds) |
 | `ENABLE_SILENCE_DETECTION` | `true` | Filter out silent recordings |
 | `RESTORE_CLIPBOARD` | `true` | Restore original clipboard after pasting |
+| `ENABLE_CHUNKED_TRANSCRIPTION` | `true` | Enable chunked transcription for UI mode (recommended for long recordings) |
+| `CHUNK_DURATION_SECONDS` | `30` | Size of each transcription chunk in seconds |
+| `CHUNK_OVERLAP_SECONDS` | `5` | Overlap between chunks for context preservation |
 
 ### Model Sizes
 
@@ -120,9 +146,14 @@ Edit `.env` to customize settings:
 2. **Global Hotkey**: `pynput` listens for `Ctrl+Option+Space` system-wide (hotkey mode)
 3. **Audio Recording**: `sounddevice` captures audio from your microphone at 16kHz
 4. **Speech-to-Text**: `faster-whisper` transcribes audio locally (no internet required)
-5. **Text Output**:
-   - **Hotkey mode**: Text is copied to clipboard and pasted via `Cmd+V` simulation
-   - **UI mode**: Text is displayed in the window for manual copy/paste
+5. **Chunked Transcription** (UI mode only):
+   - Long recordings are processed in 30-second chunks while you record
+   - Real-time progress updates show transcription status
+   - 5-second overlap between chunks preserves context and prevents word cutoffs
+   - Text appears progressively in the UI as chunks complete
+6. **Text Output**:
+   - **Hotkey mode**: Text is copied to clipboard and pasted via `Cmd+V` simulation (single-pass transcription)
+   - **UI mode**: Text is displayed in the window for manual copy/paste (chunked transcription for better UX)
 
 ## Troubleshooting
 
@@ -165,7 +196,7 @@ uv run black .
 ## Privacy
 
 - **No cloud**: All processing happens locally on your Mac
-- **No storage**: Audio is not saved to disk (in-memory only)
+- **Minimal storage**: Audio is kept in memory; temporary files only during chunked transcription (auto-deleted)
 - **No network**: The app works completely offline
 - **No telemetry**: No data is collected or sent anywhere
 
@@ -174,17 +205,17 @@ uv run black .
 - **English only**: Optimized for English language (use multilingual models for other languages)
 - **macOS only**: Uses macOS-specific features (pynput, keyboard simulation)
 - **Single application**: Can only run one instance at a time
-- **Recording length**: Default 5-minute maximum (configurable via `MAX_RECORDING_DURATION`)
+- **Recording length**: Default 1-hour maximum (configurable via `MAX_RECORDING_DURATION`)
 
 ## Future Enhancements
 
+- [x] ~~Chunked transcription for longer recordings (30+ minutes)~~ ✅ **Implemented!**
 - [ ] Menu bar app with system tray icon
 - [ ] Background service (launch agent)
 - [ ] Multiple language support
 - [ ] Custom vocabulary/prompts
 - [ ] Voice commands ("new line", "period", etc.)
 - [ ] Recording history with multiple transcriptions
-- [ ] Chunked transcription for longer recordings (30+ minutes)
 
 ## License
 

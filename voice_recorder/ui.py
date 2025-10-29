@@ -46,6 +46,15 @@ class VoiceRecorderUI:
         )
         self.status_label.pack(pady=(10, 5))
 
+        # Progress label (hidden by default)
+        self.progress_label = tk.Label(
+            self.root,
+            text="",
+            font=("Arial", 10),
+            fg="blue"
+        )
+        self.progress_label.pack(pady=(0, 5))
+
         # Text display area (scrollable, read-only)
         text_frame = tk.Frame(self.root)
         text_frame.pack(pady=10, padx=10, fill=tk.BOTH, expand=True)
@@ -111,6 +120,8 @@ class VoiceRecorderUI:
                     self._update_transcription(data)
                 elif event_type == "status":
                     self._update_status(data["message"], data.get("color", "gray"))
+                elif event_type == "progress":
+                    self._update_progress(data["processed"], data["total"])
 
         except queue.Empty:
             pass
@@ -123,9 +134,11 @@ class VoiceRecorderUI:
         if state == "IDLE":
             self.record_button.config(text="🎤 Record", state=tk.NORMAL)
             self.status_label.config(text="Ready", fg="gray")
+            self.progress_label.config(text="")  # Hide progress
         elif state == "RECORDING":
             self.record_button.config(text="⏹️ Stop Recording", state=tk.NORMAL)
             self.status_label.config(text="Recording...", fg="red")
+            self.progress_label.config(text="")  # Clear progress at start
         elif state == "PROCESSING":
             self.record_button.config(text="⏳ Processing...", state=tk.DISABLED)
             self.status_label.config(text="Transcribing...", fg="orange")
@@ -147,6 +160,23 @@ class VoiceRecorderUI:
         """Update status label."""
         self.status_label.config(text=message, fg=color)
 
+    def _update_progress(self, processed_seconds: float, total_seconds: float):
+        """Update progress display."""
+        def format_time(seconds: float) -> str:
+            """Format seconds as MM:SS."""
+            minutes = int(seconds // 60)
+            secs = int(seconds % 60)
+            return f"{minutes}:{secs:02d}"
+
+        processed_str = format_time(processed_seconds)
+        total_str = format_time(total_seconds)
+
+        # Calculate percentage
+        percentage = (processed_seconds / total_seconds * 100) if total_seconds > 0 else 0
+
+        progress_text = f"Transcribed {processed_str} / {total_str} ({percentage:.0f}%)"
+        self.progress_label.config(text=progress_text)
+
     def queue_state_update(self, state: str):
         """Queue a state update (thread-safe)."""
         self.update_queue.put(("state", state))
@@ -158,6 +188,10 @@ class VoiceRecorderUI:
     def queue_status_update(self, message: str, color: str = "gray"):
         """Queue a status update (thread-safe)."""
         self.update_queue.put(("status", {"message": message, "color": color}))
+
+    def queue_progress_update(self, processed_seconds: float, total_seconds: float):
+        """Queue a progress update (thread-safe)."""
+        self.update_queue.put(("progress", {"processed": processed_seconds, "total": total_seconds}))
 
     def show(self):
         """Start the UI main loop (blocking)."""
