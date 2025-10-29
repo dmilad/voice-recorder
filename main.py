@@ -223,8 +223,9 @@ class VoiceRecorderApp:
                 # Use accumulated transcription
                 text = self._accumulated_transcription
 
-                # Cleanup temp files
+                # Cleanup temp files and clear buffer
                 self.transcriber.cleanup_temp_files()
+                self.state_manager.clear_buffer()
 
             else:
                 # Traditional single-pass transcription (for hotkey mode or if chunking disabled)
@@ -301,6 +302,7 @@ class VoiceRecorderApp:
         finally:
             # Cleanup and return to idle state
             self.transcriber.cleanup_temp_files()
+            self.state_manager.clear_buffer()
             self.state_manager.transition_to(RecordingState.IDLE)
             self._update_ui_state("IDLE")
             self._accumulated_transcription = ""
