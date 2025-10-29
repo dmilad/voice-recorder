@@ -56,6 +56,13 @@ class VoiceRecorderApp:
         self.recording_source = "ui_button"
         self._toggle_recording()
 
+    def _on_ui_clear_pressed(self):
+        """Called when the UI clear button is pressed."""
+        print("\n--- UI Clear button pressed ---")
+        self.state_manager.clear_transcription()
+        self._update_ui_transcription("")
+        print("✅ Text cleared")
+
     def _toggle_recording(self):
         """Toggle recording state."""
         if self.state_manager.is_idle():
@@ -334,7 +341,10 @@ class VoiceRecorderApp:
             print("✅ Hotkey listener started")
 
             # Create and show UI (blocking - runs in main thread)
-            self.ui = VoiceRecorderUI(on_record_pressed=self._on_ui_record_pressed)
+            self.ui = VoiceRecorderUI(
+                on_record_pressed=self._on_ui_record_pressed,
+                on_clear_pressed=self._on_ui_clear_pressed
+            )
             print("✅ UI initialized\n")
 
             # Start UI main loop (blocks until window closes)

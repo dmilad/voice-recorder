@@ -86,7 +86,8 @@ This app requires several permissions to function:
    - Click **"⏹️ Stop Recording"** when done
    - Transcribed text appears in the window
    - Click **"📋 Copy"** to copy text to clipboard
-   - Text is never lost - it stays in the window!
+   - Click **"🗑️ Clear"** to clear the text and start fresh
+   - Text is never lost - it stays in the window until you clear it!
 
 3. **Stop the application**:
    - Close the Voice Recorder window

@@ -222,3 +222,8 @@ class StateManager:
         """
         with self._lock:
             return self._last_transcription
+
+    def clear_transcription(self) -> None:
+        """Clear the last transcription."""
+        with self._lock:
+            self._last_transcription = ""

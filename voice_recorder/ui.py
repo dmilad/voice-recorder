@@ -13,14 +13,16 @@ import pyperclip
 class VoiceRecorderUI:
     """Simple Tkinter UI for voice recording and transcription display."""
 
-    def __init__(self, on_record_pressed: Callable[[], None]):
+    def __init__(self, on_record_pressed: Callable[[], None], on_clear_pressed: Callable[[], None]):
         """
         Initialize the UI.
 
         Args:
             on_record_pressed: Callback function when record button is pressed
+            on_clear_pressed: Callback function when clear button is pressed
         """
         self.on_record_pressed = on_record_pressed
+        self.on_clear_pressed = on_clear_pressed
         self.update_queue: queue.Queue = queue.Queue()
 
         # Create main window
@@ -95,6 +97,18 @@ class VoiceRecorderUI:
         )
         self.copy_button.pack(side=tk.LEFT, padx=5)
 
+        # Clear button
+        self.clear_button = tk.Button(
+            button_frame,
+            text="🗑️ Clear",
+            font=("Arial", 14),
+            width=15,
+            height=2,
+            command=self._on_clear_clicked,
+            state=tk.DISABLED
+        )
+        self.clear_button.pack(side=tk.LEFT, padx=5)
+
     def _on_record_clicked(self):
         """Handle record button click."""
         self.on_record_pressed()
@@ -107,6 +121,13 @@ class VoiceRecorderUI:
             self._update_status("Copied to clipboard!", "green")
             # Reset status after 2 seconds
             self.root.after(2000, lambda: self._update_status("Ready", "gray"))
+
+    def _on_clear_clicked(self):
+        """Clear the displayed transcription."""
+        self.on_clear_pressed()
+        self._update_status("Text cleared", "green")
+        # Reset status after 2 seconds
+        self.root.after(2000, lambda: self._update_status("Ready", "gray"))
 
     def _check_queue(self):
         """Check queue for updates from other threads."""
@@ -150,11 +171,13 @@ class VoiceRecorderUI:
         self.text_display.insert("1.0", text)
         self.text_display.config(state=tk.DISABLED)
 
-        # Enable copy button if there's text
+        # Enable copy and clear buttons if there's text
         if text.strip():
             self.copy_button.config(state=tk.NORMAL)
+            self.clear_button.config(state=tk.NORMAL)
         else:
             self.copy_button.config(state=tk.DISABLED)
+            self.clear_button.config(state=tk.DISABLED)
 
     def _update_status(self, message: str, color: str = "gray"):
         """Update status label."""
