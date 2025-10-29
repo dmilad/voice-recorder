@@ -1,13 +1,16 @@
 # Voice Recorder
 
-A local voice-to-text application for macOS with global hotkey support. Record your voice from any application and automatically paste the transcribed text.
+A local voice-to-text application for macOS with global hotkey support and simple UI. Record your voice and either automatically paste transcribed text or display it in a window for safe copy/paste.
 
 ## Features
 
-- 🎤 **Global Hotkey**: Press `Cmd+Shift+Space` from any application to start/stop recording
+- 🎤 **Dual Recording Modes**:
+  - Global hotkey (`Ctrl+Option+Space`) for quick auto-insert into active text fields
+  - UI button for safe transcription display (text never gets lost!)
+- 🪟 **Simple GUI**: Clean Tkinter window to view and copy transcriptions
 - 🔒 **Fully Local**: All processing happens on your Mac (no cloud, no internet required)
 - ⚡ **Fast**: Uses faster-whisper for optimized transcription
-- 📋 **Auto-Paste**: Automatically pastes transcribed text to the active text field
+- 📋 **Smart Paste**: Auto-paste or manual copy/paste - your choice
 - 🔇 **Smart Detection**: Filters out silent recordings automatically
 - 🇬🇧 **English Only**: Optimized for English language transcription
 
@@ -65,16 +68,28 @@ This app requires several permissions to function:
    ```bash
    uv run python main.py
    ```
+   A window will open with the Voice Recorder interface.
 
-2. **Record and transcribe**:
-   - Press `Cmd+Shift+Space` to **start** recording
+2. **Record and transcribe** (two modes):
+
+   **Mode 1: Quick Auto-Insert (Hotkey)**
+   - Focus any text field in any application
+   - Press `Ctrl+Option+Space` to **start** recording
    - Speak into your microphone
-   - Press `Cmd+Shift+Space` again to **stop** recording
-   - Wait for transcription to complete
-   - Text will automatically paste to your active text field!
+   - Press `Ctrl+Option+Space` again to **stop** recording
+   - Text automatically pastes to your active text field!
+
+   **Mode 2: Safe Display (UI Button)**
+   - Click the **"🎤 Record"** button in the Voice Recorder window
+   - Speak into your microphone
+   - Click **"⏹️ Stop Recording"** when done
+   - Transcribed text appears in the window
+   - Click **"📋 Copy"** to copy text to clipboard
+   - Text is never lost - it stays in the window!
 
 3. **Stop the application**:
-   - Press `Ctrl+C` in the terminal
+   - Close the Voice Recorder window
+   - Or press `Ctrl+C` in the terminal
 
 ## Configuration
 
@@ -83,7 +98,7 @@ Edit `.env` to customize settings:
 | Setting | Default | Description |
 |---------|---------|-------------|
 | `WHISPER_MODEL` | `base.en` | Model size (tiny.en, base.en, small.en, medium.en, large) |
-| `HOTKEY` | `<cmd>+<alt>+<space>` | Global hotkey combination |
+| `HOTKEY` | `<cmd>+<alt>+<space>` | Global hotkey combination (Ctrl+Option+Space) |
 | `MAX_RECORDING_DURATION` | `300` | Maximum recording length (seconds) |
 | `MIN_RECORDING_DURATION` | `0.5` | Minimum recording length (seconds) |
 | `ENABLE_SILENCE_DETECTION` | `true` | Filter out silent recordings |
@@ -101,10 +116,13 @@ Edit `.env` to customize settings:
 
 ## How It Works
 
-1. **Global Hotkey**: `pynput` listens for `Cmd+Shift+Space` system-wide
-2. **Audio Recording**: `sounddevice` captures audio from your microphone at 16kHz
-3. **Speech-to-Text**: `faster-whisper` transcribes audio locally (no internet)
-4. **Text Injection**: Text is copied to clipboard and pasted via `Cmd+V` simulation
+1. **User Interface**: Simple `tkinter` window for displaying transcriptions and manual recording
+2. **Global Hotkey**: `pynput` listens for `Ctrl+Option+Space` system-wide (hotkey mode)
+3. **Audio Recording**: `sounddevice` captures audio from your microphone at 16kHz
+4. **Speech-to-Text**: `faster-whisper` transcribes audio locally (no internet required)
+5. **Text Output**:
+   - **Hotkey mode**: Text is copied to clipboard and pasted via `Cmd+V` simulation
+   - **UI mode**: Text is displayed in the window for manual copy/paste
 
 ## Troubleshooting
 
@@ -122,10 +140,11 @@ Edit `.env` to customize settings:
 - Try a smaller model: `WHISPER_MODEL=tiny.en`
 - Ensure you're using the `.en` models for English-only
 
-### Text doesn't paste
+### Text doesn't paste (hotkey mode)
 - Make sure the target application has focus
 - Check **Accessibility** permissions
 - Text is still copied to clipboard - you can paste manually with `Cmd+V`
+- **Alternative**: Use the UI button recording mode instead - text will never get lost!
 
 ### "PortAudio not found" error
 - Install PortAudio: `brew install portaudio`
@@ -155,16 +174,17 @@ uv run black .
 - **English only**: Optimized for English language (use multilingual models for other languages)
 - **macOS only**: Uses macOS-specific features (pynput, keyboard simulation)
 - **Single application**: Can only run one instance at a time
-- **Console-based**: No GUI (runs in Terminal)
+- **Recording length**: Default 5-minute maximum (configurable via `MAX_RECORDING_DURATION`)
 
 ## Future Enhancements
 
-- [ ] Menu bar app with status indicator
+- [ ] Menu bar app with system tray icon
 - [ ] Background service (launch agent)
 - [ ] Multiple language support
 - [ ] Custom vocabulary/prompts
 - [ ] Voice commands ("new line", "period", etc.)
-- [ ] Recording history
+- [ ] Recording history with multiple transcriptions
+- [ ] Chunked transcription for longer recordings (30+ minutes)
 
 ## License
 

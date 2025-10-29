@@ -22,6 +22,7 @@ class StateManager:
         self._state = RecordingState.IDLE
         self._lock = threading.Lock()
         self._audio_buffer: list[np.ndarray] = []
+        self._last_transcription: str = ""
 
     @property
     def state(self) -> RecordingState:
@@ -96,3 +97,23 @@ class StateManager:
     def is_processing(self) -> bool:
         """Check if state is PROCESSING."""
         return self.state == RecordingState.PROCESSING
+
+    def set_last_transcription(self, text: str) -> None:
+        """
+        Store the last transcription.
+
+        Args:
+            text: The transcribed text
+        """
+        with self._lock:
+            self._last_transcription = text
+
+    def get_last_transcription(self) -> str:
+        """
+        Get the last transcription.
+
+        Returns:
+            The last transcribed text
+        """
+        with self._lock:
+            return self._last_transcription
