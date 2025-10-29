@@ -21,7 +21,7 @@ class HotkeyListener:
     def start(self) -> None:
         """Start listening for hotkeys."""
         print(f"Setting up hotkey: {config.hotkey}")
-        print("Press Cmd+Shift+Space to start/stop recording")
+        print(f"Press {config.hotkey} to start/stop recording")
 
         try:
             # Create listener with global hotkeys
